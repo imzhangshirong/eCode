@@ -1,613 +1,920 @@
-//----------------------------------------------------------//
-//*                            Ecode 2.1                            *//
-//*       Created by zhangshirong  - J.A.I.S        *//
-//----------------------------------------------------------//
-var color_sys_command="#0000FF";
-var color_sys_command_ignore="#EFEFEF";
-var color_sys_flowline="#808080";
-var color_sys_flowline_ignore="#EFEFEF";
-var color_assembly="#000080"
-var color_function="#000080";
-var color_dll_command="#800000";
-var color_custom_datatype="#000080";
-var color_constant="#000080";
-var color_constant_value="#800000";
-var color_datatype="#0000FF";
-var color_remark="#008000";
-
-var color_code_number="#800000";
-var color_code_array="#000080";
-var color_code_quto="#008080";
-var color_code_bracket="#000080";
-var color_code_brace="#000080";
-var color_code_constant="#000080";
-var color_code_command="#800000";
-//目前的调用方法
-function trans(head_div_id){//head_div_id_ecode_1/2/3...
-	var p_a=-1,n=0,htmldata="",datacode="",div_code_name="";
-	htmldata=document.getElementById(head_div_id).innerHTML;
-	p_a=htmldata.indexOf(head_div_id+"_ecode_",p_a+1);
-	while(p_a!=-1){
-		n=n+1;
-		div_code_name=head_div_id+"_ecode_"+n.toString();
-		datacode=document.getElementById(div_code_name).innerHTML;
-		ecode(datacode,div_code_name);
-		p_a=htmldata.indexOf(head_div_id+"_ecode_",p_a+1);
-	}
-}
-//复制操作按钮
-function ecode_copydata(divid){ 
-	document.getElementById("data_"+divid).style.display = "block";
-	document.getElementById("codearea_"+divid).style.display = "none";
-	document.getElementById("copy_button_"+divid).href="javascript:ecode_copydata_('"+divid+"')";
-	document.getElementById("copy_button_"+divid).innerHTML="恢复视图";
-}
-function ecode_copydata_(divid){ 
-	document.getElementById("data_"+divid).style.display = "none";
-	document.getElementById("codearea_"+divid).style.display = "block";
-	document.getElementById("copy_button_"+divid).href="javascript:ecode_copydata('"+divid+"')";
-	document.getElementById("copy_button_"+divid).innerHTML="复制代码";
-}
-//画代码
-function ecode(data,divid){
-	var temp="",temp_="",temp_r="",out="",headtext="";
-	var p_a=-1,p_b=-1,a=0,b=0,t=-1,m_c=0;
-	var all_sys=0,sys_line="",x=0,y=1;
-	var y_sys_s=new Array();
-	var y_sys_e=new Array();
-	var y_sys_l=new Array();
-	var data_=data;
-	linetext=data_.split('\n');
-	for (a=0;a<linetext.length;a++){
-		headtext=(linetext[a]);
-		p_a=headtext.indexOf(" ");
-		headtext=headtext.substr(0,p_a);
-		temp=linetext[a].substr(p_a);
-		temp.replace(/[ ]/g,"");
-		if(headtext==".程序集"){
-			y+=20+1;
-			linecode=temp.split(",");
-			out+="<table class='e_code_tab'  style='margin-bottom:10px'><tr class='e_code_type_col'><td>程序集名</td><td>保留</td><td>保留</td><td>备注</td></tr><tr class='e_code_type_col_content'>";
-			y+=20+1+1+10;
-				for (b=0;b<linecode.length;b++){
-					if(b==0){out+="<td style='color:"+color_function+"'>";}
-					else if(b==3){out+="<td style='color:"+color_remark+"'>";}
-					else{out+="<td>";}
-					if(linecode[b]!=undefined){
-						out+=linecode[b]+"</td>";
-					}
-					else{out+="</td>";}
-				}
-				for (b=0;b<4-linecode.length;b++){out+="<td></td>";}
-				out+="</tr>"
-				t=0;
-		}
-		else if(headtext==".程序集变量"){
-			y+=20+1;
-			linecode=temp.split(",");
-			if(t==0){
-				out+="<tr class='e_code_type_col'><td>变量名</td><td>类型</td><td>数组</td><td>备注</td></tr><tr class='e_code_type_col_content'>";
-				y+=20+1;
-			}
-			else{out+="<tr class='e_code_type_col_content'>"}
-			m_blank=0;
-			for (b=0;b<linecode.length;b++){
-				if(b==2){m_blank=1;}
-				else{
-					if(b==1){out+="<td style='color:"+color_datatype+"'>";}
-					else if(b==4){out+="<td style='color:"+color_remark+"'>";}
-					else{out+="<td>";}
-					if(b==3){linecode[b]=linecode[b].replace(/["]/g,"");}
-					if(linecode[b]!=undefined){
-						out+=linecode[b]+"</td>";
-					}
-					else{out+="</td>";}
-				}
-			}
-			for (b=0;b<4-linecode.length+m_blank;b++){out+="<td></td>";}
-			out+="</tr>"
-			t=1;
-		}
-		else if(headtext==".子程序"){
-			y+=20+1;
-			linecode=temp.split(",");
-			out+="</table>";
-			out+="<table class='e_code_tab' style='margin-bottom:5px;margin-top:5px;'><tr class='e_code_type_col'><td>子程序名</td><td>返回值类型</td><td>公开</td><td colspan='3'>备注</td></tr><tr class='e_code_type_col_content'>";
-			y+=20+1+5+5;
-			for (b=0;b<linecode.length;b++){
-				if(b==0){out+="<td style='color:"+color_function+"'>";}
-				else if(b==1){out+="<td style='color:"+color_datatype+"'>";}
-				else if(b==3){out+="<td style='color:"+color_remark+"' colspan='3'>";}
-				else{out+="<td>";}
-				if(linecode[b]!=undefined){
-					if(b==2&trim(linecode[b])!=""){out+="√</td>";}
-					else{out+=linecode[b]+"</td>";}
-				}
-				else{out+="</td>";}
-			}
-			for (b=0;b<4-linecode.length;b++){
-				if(b==4-linecode.length-1){out+="<td colspan='3'>";}else{out+="<td>"}
-				out+="</td>";
-			}
-			out+="</tr>";
-			t=2;
-		}
-		else if(headtext==".DLL命令"){
-			y+=20+1;
-			temp_="";
-			linecode=temp.split(",");
-			out+="</table>";
-			temp="<table class='e_code_tab' style='margin-bottom:10px'><tr class='e_code_type_col'><td>Dll命令名</td><td>返回值类型</td><td>公开</td><td colspan='2'>备注</td></tr><tr class='e_code_type_col_content'>";
-			y+=10+20+1;
-			for (b=0;b<linecode.length;b++){
-				if(b==0){temp+="<td style='color:"+color_function+"'>"+linecode[b]+"</td>";}
-				else if(b==1){temp+="<td style='color:"+color_datatype+"'>"+linecode[b]+"</td>";}
-				else if(b==2){
-					linecode[b]=linecode[b].replace(/["]/g,"");
-					temp_+="</tr><tr class='e_code_type_col'><td colspan='5'>库文件名</td></tr><tr class='e_code_type_col_content'><td colspan='5' style='color:"+color_dll_command+"'>"+linecode[b]+"</tr>";
-					y+=20+20+1+1;
-				}
-				else if(b==3){
-					linecode[b]=linecode[b].replace(/["]/g,"");
-					temp_+="<tr class='e_code_type_col'><td colspan='5'>在库中对应的命令名</td></tr><tr class='e_code_type_col_content'><td colspan='5' style='color:"+color_dll_command+"'>"+linecode[b]+"</tr>";
-					y+=20+20+1+1;
-				}
-				else if(b==4){
-					temp+="<td>"+linecode[b]+"</td>";
-				}
-				else if(b==5){
-					temp+="<td colspan='2' style='color:"+color_remark+"'>"+linecode[b]+"</td>";
-				}
-			}
-			if(linecode.length<=4){temp+="<td></td>";}
-			if(linecode.length<=5){temp+="<td colspan='2'></td>";}
-			out+=temp+temp_;
-			out+="</tr><tr class='e_code_type_col'><td>参数名</td><td>类型</td><td>传址</td><td>数组</th><td>备注</td></tr>"
-			y+=20+1;
-			t=2;
-		}
-		else if(headtext==".参数"){//子程序参数
-			y+=20+1;
-			linecode=temp.split(",");
-			if(t!=3){
-				out+="<tr class='e_code_type_col'><td>参数名</td><td>类型</td><td>参考</td><td>可空</td><td>数组</td><td>备注</td></tr><tr class='e_code_type_col_content'>";
-				y+=20+1+1;
-			}
-			else{out+="<tr class='e_code_type_col_content'>";}
-			m_c=0;
-			for (b=0;b<linecode.length;b++){
-				if(b==1){out+="<td style='color:"+color_datatype+"'>";}
-				else if(b==3){out+="<td style='color:"+color_remark+"'>";}
-				else{out+="<td>";}
-				if(b==2){
-					linecode[b]=trim(linecode[b]);
-					if(linecode[b]=="参考"){out+="√</td><td></td><td></td>"}
-					else if(linecode[b]=="可空"){out+="</td><td>√</td><td></td>"}
-					else if(linecode[b]=="数组"){out+="</td><td></td><td>√</td>"}
-					else if(linecode[b]=="参考 可空"){out+="√</td><td>√</td><td></td>"}
-					else if(linecode[b]=="可空 数组"){out+="</td><td>√</td><td>√</td>"}
-					else if(linecode[b]=="参考 数组"){out+="√</td><td></td><td>√</td>"}
-					else if(linecode[b]=="参考 可空 数组"){out+="√</td><td>√</td><td>√</td>"}
-					else{out+="</td><td></td><td></td>"}
-					m_c=2
+var Ecode = {
+	create: function() {
+		var ecode={};
+		var lastPart=-1;
+		var replaceCommand=[
+			{origi:".如果真",replace:"<span class='sysCommand ifTrue'>如果真</span>"},
+			{origi:".如果真结束",replace:"<span class='sysCommand close ifTrueClose'>如果真结束</span>"},
+			{origi:".判断开始",replace:"<span class='sysCommand'>判断</span>"},
+			{origi:".默认",replace:"<span class='sysCommand judgeDef def'>默认</span>"},
+			{origi:".判断结束",replace:"<span class='sysCommand close judgeClose'>判断结束</span>"},
+			{origi:".如果",replace:"<span class='sysCommand if'>如果</span>"},
+			{origi:".否则",replace:"<span class='sysCommand ifDef def'>否则</span>"},
+			{origi:".如果结束",replace:"<span class='sysCommand ifClose close'>如果结束</span>"},
+			{origi:".判断循环首",replace:"<span class='sysCommand cycle'>判断循环首</span>"},
+			{origi:".判断循环尾",replace:"<span class='sysCommand'>判断循环尾</span>"},
+			{origi:".计次循环首",replace:"<span class='sysCommand cycle'>计次循环首</span>"},
+			{origi:".计次循环尾",replace:"<span class='sysCommand'>计次循环尾</span>"},
+			{origi:".变量循环首",replace:"<span class='sysCommand cycle'>变量循环首</span>"},
+			{origi:".变量循环尾",replace:"<span class='sysCommand'>变量循环尾</span>"},
+			{origi:".循环判断首",replace:"<span class='sysCommand cycle'>循环判断首</span>"},
+			{origi:".循环判断尾",replace:"<span class='sysCommand'>循环判断尾</span>"},
+		];
+		var sysCom=[
+			'返回',
+			'跳出循环',
+			'到循环尾',
+			'结束',
+		]
+		ecode.trans=function(ele){ //ele如果为空则转换当前所有class为ecode的，ele为指定的即转换指定，同时ele可以为自定义的元素数组
+			var eleEcode;
+			if(ele){
+				if(ele.length>1){
+					eleEcode=[ele];
 				}
 				else{
-					if(linecode[b]!=undefined){
-						out+=linecode[b]+"</td>";
-					}
-					else{out+="</td>";}
+					eleEcode=ele;
 				}
 			}
-			for (b=0;b<6-linecode.length-m_c;b++){out+="<td></td>";}
-			out+="</tr>";
-			t=3;
-		}
-		else if(headtext==".局部变量"){//子程序变量
-			y+=20+1;
-			linecode=temp.split(",");
-				if(t!=4){
-					out+="</table><table class='e_code_tab' style='margin-bottom:2px;'><tr class='e_code_type_col'><td>变量名</td><td>类型</td><td>静态</td><td>数组</td><td>备注</td></tr><tr class='e_code_type_col_content'>";
-					y+=20+1+1+2;
-				}
-				else{out+="<tr class='e_code_type_col_content'>";}
-				for (b=0;b<linecode.length;b++){
-					if(b==3){linecode[b]=linecode[b].replace(/["]/g,"");}
-					if(b==1){out+="<td style='color:"+color_datatype+"'>";}
-					else if(b==4){out+="<td style='color:"+color_remark+"'>";}
-					else{out+="<td>";}
-					if(linecode[b]!=undefined){
-						if(b==2){if(trim(linecode[b])!=""){out+="√</td>";}else{out+=linecode[b]+"</td>";}}
-						else{out+=linecode[b]+"</td>";}
-					}
-					else{out+="</td>";}
-				}
-				for (b=0;b<5-linecode.length;b++){out+="<td></td>";}
-				out+="</tr>";
-				t=4;
-		}
-		else if(headtext==".数据类型"){
-			y+=20+1;
-			linecode=temp.split(",");
-			out+="</table>"
-			if(t!=5){
-				out+="<table class='e_code_tab' style='margin-bottom:10px'><tr class='e_code_type_col'><td>数据类型名</td><td>公开</td><td colspan='3'>备注</td></tr><tr class='e_code_type_col_content'>";
-				y+=20+10+1;
+			else{
+				eleEcode=document.querySelectorAll(".ecode");
 			}
-			else{out+="<tr class='e_code_type_col_content'>"}
-			for (b=0;b<linecode.length;b++){
-				if(b==0){out+="<td style='color:"+color_custom_datatype+"'>"}
-				else if(b==2){out+="<td colspan='3' style='color:"+color_remark+"'>"}
-				else{out+="<td>";}
-				if(linecode[b]!=undefined){
-					if(b==1){if(trim(linecode[b])!=""){out+="√</td>";}else{out+=linecode[b]+"</td>";}}
-					else{out+=linecode[b]+"</td>";}
-				}
-				else{out+="</td>";}
-			}
-			for (b=0;b<3-linecode.length;b++){
-				if(b+linecode.length==2){out+="<td colspan='3'></td>";}
-				else{out+="<td></td>";}
-			}
-			out+="</tr><tr class='e_code_type_col'><td>成员名</td><td>类型</td><td>传址</td><td>数组</th><td>备注</td></tr>";
-			y+=20+1;
-			t=5;
-		}
-		else if(headtext==".常量"){
-			y+=20+1;
-			linecode=temp.split(",");
-			if(t!=6){
-				out+="<table class='e_code_tab' style='margin-bottom:5px'><tr class='e_code_type_col'><td>常量名称</td><td>常量值</td><td>公开</td><td>备注</td></tr><tr class='e_code_type_col_content'>";
-				y+=20+1+5;
-			}
-			else{out+="<tr class='e_code_type_col_content'>";}
-			for (b=0;b<linecode.length;b++){
-				if(b==1){linecode[b]=linecode[b].replace(/["]/g,"");}
-				if(b==0){out+="<td style='color:"+color_constant+"'>"}
-				else if(b==1){out+="<td style='color:"+color_constant_value+"'>"}
-				else if(b==3){out+="<td style='color:"+color_remark+"'>";}
-				else{out+="<td>"}
-				if(linecode[b]!=undefined){
-					if(b==2){if(trim(linecode[b])!=""){out+="√</td>";}else{out+=linecode[b]+"</td>";}}
-					else{out+=linecode[b]+"</td>";}
-				}
-				else{out+="</td>";}
-			}
-			for (b=0;b<4-linecode.length;b++){out+="<td></td>";}
-			out+="</tr>";
-			t=6;
-		}
-		else if(linetext[a]!=""){
-			temp=linetext[a].substr(0,7);
-			temp_=temp;
-			if(temp=="    .参数"||temp=="    .成员"){//Dll参数，数据类型成员
-				y+=20+1;
-				temp=linetext[a].substr(8);
-				linecode=temp.split(",");
-				out+="<tr class='e_code_type_col_content'>";
-				m_c=0;
-				for (b=0;b<linecode.length;b++){
-					if(b==1){out+="<td style='color:#0000FF'>";}
-					else if(b==3){if(temp_=="    .参数"){out+="<td style='color"+color_remark+"'>";}else{out+="<td>"}}
-					else if(b==4){out+="<td style='color:"+color_remark+"'>";}
-					else{out+="<td>"}
-					if(linecode[b]!=undefined){
-						linecode[b]=trim(linecode[b]);
-						if(temp_=="    .参数"){
-							if(b==2){
-								if(linecode[b]=="传址"){out+="√</td><td></td>"}
-								else if(linecode[b]=="数组"){out+="</td><td>√</td>"}
-								else if(linecode[b]=="传址 数组"){out+="√</td><td>√</td>"}
-								else{out+="</td><td></td>"}
-								m_c=1;
+			for(var a=0;a<eleEcode.length;a++){
+				lastPart=-1;
+				if(eleEcode[a].getAttribute("status")!="trans"){
+					eleEcode[a].setAttribute("status","trans");
+					var origiData=eleEcode[a].innerHTML;
+					var lineCodes=origiData.split("\n");
+					var b;
+					for(b=0;b<lineCodes.length;b++) {
+						var temp = new Object();
+						if (trim(lineCodes[b]).substr(0, 1) == ".") {
+							var tableCode = lineCodes[b].split(",");
+							for (var c = 0; c < tableCode.length; c++) {
+								tableCode[c] = trim(tableCode[c]);
 							}
-							else{out+=linecode[b]+"</td>";}
+							var p = tableCode[0].indexOf(" ");
+							if(p==-1){
+								p=tableCode[0].length;
+							}
+							temp.type = tableCode[0].substr(0, p);
+							tableCode[0] = tableCode[0].substr(p + 1);
+							temp.parameter = tableCode;
+						}
+						else {
+							temp.type = "code";
+							temp.parameter = lineCodes[b];
+						}
+						lineCodes[b] = temp;
+					}
+					//清除空白行
+					var lineCodesR=new Array();
+					for(b=0;b<lineCodes.length;b++){
+						if(lineCodes[b].type!=""){
+							if(lineCodes[b].type!="code" || lineCodes[b].parameter!=""){
+								if(lineCodes[b].type!=".版本" && lineCodes[b].type!=".支持库"){
+									lineCodesR[lineCodesR.length]=lineCodes[b];
+								}
+
+							}
+						}
+					}
+					////////////////////////
+					//程序集单位
+					var assembly=new Array();
+					var limit=findMatchArr(".程序集","",lineCodesR);
+					if(limit.length==0){
+						limit=new Array();
+						limit[limit.length]=[0,lineCodesR.length-1];
+					}
+					for(b=0;b<limit.length;b++){
+						var temp=new Array();
+						for(var c=limit[b][0];c<=limit[b][1];c++){
+							temp[temp.length]=lineCodesR[c];
+						}
+						var limit1=findMatchArr(".子程序","",temp);
+						if(limit1.length>0){
+							var program=new Array();
+							for(var c=limit[b][0];c<limit1[0][0];c++){
+								program[program.length]=lineCodesR[c];
+							}
+							for(var c=0;c<limit1.length;c++){
+								var temp1=new Array();
+								for(var d=limit1[c][0];d<=limit1[c][1];d++){
+									temp1[temp1.length]=temp[d];
+								}
+								program[program.length]=matchRe(temp1);
+							}
+							assembly[assembly.length]=program;
 						}
 						else{
-							if(b==3){out+=linecode[b].replace(/["]/g,"")+"</td>";}
-							else if(b==2){if(linecode[b]!=""){out+="√</td>";}else{out+="</td>"}}
-							else{out+=linecode[b]+"</td>";}
+							assembly[assembly.length]=temp;
 						}
 					}
-					else{out+="</td>";}
-				}
-				
-				for (b=0;b<5-m_c-linecode.length;b++){out+="<td></td>";}
-				out+="</tr>";
-			}
-			else {//代码区域
-				temp_="";
-				temp=trim(linetext[a]);
-				if(temp.substr(0,1)=="."){//处理系统流程命令
-					p_a=temp.indexOf("(");
-					p_b=linetext[a].indexOf(".");
-					_blank=linetext[a].slice(0,p_b);
-					if(p_a==-1){p_a=temp.length;wm=1}else{wm=0;}
-					temp=trim(temp.slice(1,p_a));
-					temp_r=temp
-					if(temp=="如果真"){
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
+					console.log(assembly);
+					var html="";
+					for(var b=0;b<assembly.length;b++){
+						html+="<div class='assembly'>";
+						html+=drawn(assembly[b]);
+						html+="</div>";
 					}
-					else if(temp=="如果真结束"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]-2).toString()+"px;width:19px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10-1).toString()+"px;left:"+(y_sys_l[all_sys]*24-x).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";border-bottom:1px dashed "+color_sys_flowline_ignore+";margin-right:4px'></div>";
-						x+=24;
-					}
-					else if(temp=="判断开始"){
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-						temp_r="判断"
-					}
-					else if(temp=="默认"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]+20-2).toString()+"px;width:19px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10).toString()+"px;left:"+(y_sys_l[all_sys]*24-x).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";border-bottom:1px dashed "+color_sys_flowline+";margin-right:4px'></div>";
-						x+=24;
-						temp_r="";
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-					}
-					else if(temp=="判断结束"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]-1).toString()+"px;width:7px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10).toString()+"px;left:"+(y_sys_l[all_sys]*24-x+12).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";margin-right:4px'></div>";
-						x+=12;
-						
-					}
-					else if(temp=="如果"){
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-					}
-					else if(temp=="否则"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]+20-2).toString()+"px;width:19px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10).toString()+"px;left:"+(y_sys_l[all_sys]*24-x).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";border-bottom:1px dashed "+color_sys_flowline+";margin-right:4px'></div>";
-						x+=24;
-						temp_r="";
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-					}
-					else if(temp=="如果结束"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]-1).toString()+"px;width:7px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10).toString()+"px;left:"+(y_sys_l[all_sys]*24-x+12).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";margin-right:4px'></div>";
-						x+=12;
-						
-					}
-					else if(temp=="计次循环首"){
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-					}
-					else if(temp=="计次循环尾"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]-2).toString()+"px;width:19px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10-1).toString()+"px;left:"+(y_sys_l[all_sys]*24-x).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";border-bottom:1px dashed "+color_sys_flowline+";margin-right:4px'></div>";
-						x+=24;
-					}
-					else if(temp=="判断循环首"){
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-					}
-					else if(temp=="判断循环尾"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]-2).toString()+"px;width:19px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10-1).toString()+"px;left:"+(y_sys_l[all_sys]*24-x).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";border-bottom:1px dashed "+color_sys_flowline+";margin-right:4px'></div>";
-						x+=24;
-					}
-					else if(temp=="变量循环首"){
-						y_sys_s[all_sys]=y;
-						y_sys_e[all_sys]=y;
-						y_sys_l[all_sys]=_blank.length/4;
-						all_sys++;
-					}
-					else if(temp=="变量循环尾"){
-						all_sys--;
-						y_sys_e[all_sys]=y;
-						sys_line+="<div style='height:"+(y_sys_e[all_sys]-y_sys_s[all_sys]-2).toString()+"px;width:19px;float:left;position:relative;top:"+(y_sys_s[all_sys]+10-1).toString()+"px;left:"+(y_sys_l[all_sys]*24-x).toString()+"px;border-left:1px dashed "+color_sys_flowline+";border-top:1px dashed "+color_sys_flowline+";border-bottom:1px dashed"+color_sys_flowline+";margin-right:4px'></div>";
-						x+=24;
-					}
-					if(temp.indexOf("版本")==-1&&temp.indexOf("支持库")==-1){
-						if(temp.substr(temp.length-1,1)==" "){temp=temp.slice(0,temp.length-1);}
-						p_a=linetext[a].indexOf("(");
-						if(p_a==-1){p_a=linetext[a].length-1}
-						temp_=linetext[a].substr(p_a+1)
-						temp_=linetext[a].slice(_blank.length+1+temp.length,p_a+1).replace(/[ ]/g,"&nbsp;")+ecode_highlight(temp_)
-						if(wm==1){linetext[a]="<div class='e_code_tab_width' style='width:"+((_blank.length+4)*6).toString()+"px'></div>"+temp_r.fontcolor(color_sys_command_ignore)+temp_;}
-						else{linetext[a]="<div class='e_code_tab_width' style='width:"+((_blank.length+4)*6).toString()+"px'></div>"+temp_r.fontcolor(color_sys_command)+temp_;}
-						temp=linetext[a];
-					}
-					else{temp=""}
-				}
-				else{temp=ecode_highlight(linetext[a]);}
-				if(t>=0){out+="</table>";t=-1;}
-				if(temp!=""){out+="<div class='e_code_codeline'>"+temp+"</div>";y+=18;}
-			}
-		}
-	}
-	if(t>=0){out+="</table>";t=-1;}//结束表格
-	out="<div class='e_code_e_code'><div class='e_code_copy'><div class='e_code_copy_button'> <a id='copy_button_"+divid+"' href=javascript:ecode_copydata('"+divid+"')>复制代码</a></div></div><div id='data_"+divid+"' class='e_code_data'><textarea readonly='readonly' class='e_code_copy_codedata' style='padding:15px;' id='codedata_"+divid+"' class='e_code_codedata'>"+data+"</textarea></div><div class='e_code_codecontainer'><div class='e_code_codearea' id='codearea_"+divid+"' style='height:"+(y).toString()+"px;width:100%'>"+out+"<div style='height:"+y.toString()+"px;float:left;clear:left;position:relative;top:-"+y.toString()+"px;'>"+sys_line+"</div></div></div></div>";
-	document.getElementById(divid).innerHTML=out;
-	//document.getElementById("result").value=out;//测试
-}
-//高亮代码
-function ecode_highlight(codeline){
-	var illstr=";,;.;];); ;};+;-;*;/;\;=;|;>;<;[;{;(;",numstr="0123456789",all_num=-1,all_num_=-1;
-	var p_a=-1,p_b=-1,p_c=-1,p_d=-1,temp_="",e=0,temp_1="",k=0,k_=0;
-	var temp=codeline
-	var num_s=new Array();
-	var num_e=new Array();
-	//高亮#常量
-	p_a=temp.indexOf("#");
-	while(p_a!=-1){
-		p_b=-1;
-		for(e=p_a;e<temp.length;e++){
-			if(illstr.indexOf(";"+temp.substr(e,1)+";")!=-1){p_b=e;break;}
-		}
-		if(p_b==-1){p_b=temp.length}
-		if(!inquto(temp,p_a)){
-			p_c=temp.lastIndexOf("'",p_a)
-			if(inquto(temp,p_c)||p_c==-1){
-				temp_=temp.slice(p_a,p_b)
-				temp_=temp_.fontcolor(color_code_constant)
-				temp=temp.slice(0,p_a)+temp_+temp.substr(p_b);
-				p_a=temp.indexOf("#",p_a+1+temp_.length);
-			}
-			else{break}
-		}
-	}
-	//高亮数字
-	p_b=-1;p_a=-1;
-	for(e=0;e<temp.length;e++){
-		if(numstr.indexOf(temp.charAt(e))!=-1&&k==0){
-			if(temp.charAt(e-1)=="#"||illstr.indexOf(temp.charAt(e-1))==-1){k_=1}
-			else {num_s[all_num+1]=e;
-			num_e[all_num+1]=-1;}
-			p_a=e;k=1;
-		}
-		else if(numstr.indexOf(temp.charAt(e))==-1&&k==1){
-			if(k_==0){
-				all_num++;
-				num_s[all_num]=p_a;
-				num_e[all_num]=e;}
-			k_=0;
-			k=0;
-		}
-	}
-	if(num_e[all_num+1]==-1){all_num++}
-	for(e=all_num;e>=0;e--){
-		p_a=num_s[e]
-		p_b=num_e[e]
-		if(p_b==-1){p_b=temp.length}
-		if(!inquto(temp,p_a)){
-			p_c=temp.lastIndexOf("'",p_a)
-			if(inquto(temp,p_c)||p_c==-1){
-				temp_=temp.slice(p_a,p_b)
-				temp=temp.slice(0,p_a)+temp_.fontcolor(color_code_number)+temp.substr(p_b);
-			}
-		}
-	}
-	//高亮数组
-	temp=ecode_highlight_pair(temp,"[",color_code_array);
-	temp=ecode_highlight_pair(temp,"]",color_code_array);
-	//高亮{}字节集
-	temp=ecode_highlight_pair(temp,"{",color_code_brace);
-	temp=ecode_highlight_pair(temp,"}",color_code_brace);
-	//高亮命令
-	p_b=-1;
-	p_a=temp.indexOf('(',p_b);
-	while(p_a!=-1){
-		p_c=p_a;
-		p_b=p_a;
-		for(e=p_a-1;e>0;e--){
-			if(temp.substr(e,1)==" "){p_b--}
-			else{break}
-		}
-		p_a=0;
-		for(e=p_b-1;e>0;e--){
-			if(illstr.indexOf(";"+temp.substr(e,1)+";")!=-1){p_a=e+1;break;}
-		}
+					eleEcode[a].innerHTML="<div class='controller'><span class='desc'>"+eleEcode[a].getAttribute("desc")+"</span><a class='copy' href='javascript:' onclick='EcodeCopyCode(this)'>复制代码</a></div><div class='show'>"+html+"</div><div class='origiData'><textarea>"+origiData+"</textarea></div>";
+					var eleOrigiData=eleEcode[a].querySelector(".origiData");
+					eleEcode[a].style.height=eleEcode[a].clientHeight+"px";
+					eleOrigiData.style.height=eleEcode[a].clientHeight-30+"px";
+					var eleEcodeLine=eleEcode[a].querySelectorAll("ul");
+					var eleEcodeDef=eleEcode[a].querySelectorAll(".def");
+					var eleEcodeIfTrue=eleEcode[a].querySelectorAll(".ifTrue");
+					var eleEcodeCyc=eleEcode[a].querySelectorAll(".cycle");
+					var eleEcodeShow=eleEcode[a].querySelector(".show");
 
-		if(!inquto(temp,p_b)){
-			p_c=temp.lastIndexOf("'",p_a)
-			if(inquto(temp,p_c)||p_c==-1){
-				temp_=temp.slice(p_a,p_b)
-				if(temp_=="返回"||temp_=="跳出循环"||temp_=="到循环尾"||temp_=="结束"){temp_=temp_.fontcolor(color_sys_command);}
-				else{temp_=temp_.fontcolor(color_code_command);}
-				temp=temp.slice(0,p_a)+temp_+temp.substr(p_b);
+					for(var b=0;b<eleEcodeDef.length;b++){
+						var parent=eleEcodeDef[b].parentElement.parentElement.parentElement;
+						var line1=parent.children[0];
+						var line2=parent.children[1];
+						line1.style.height=eleEcodeDef[b].offsetTop+"px";
+						line2.style.top=eleEcodeDef[b].offsetTop-10+"px";
+						line2.style.height=parent.clientHeight-eleEcodeDef[b].offsetTop+"px";
+						line2.style.display="block";
+						line1.querySelector(".triangle-right").style.bottom="-5px";
+						line1.querySelector(".triangle-right").style.display="block";
+						line2.querySelector(".triangle-down").style.display="block";
+					}
+					for(var b=0;b<eleEcodeIfTrue.length;b++){
+						var parent=eleEcodeIfTrue[b].parentElement.parentElement;
+						var line1=parent.children[0];
+						line1.style.borderBottomWidth="0px";
+						line1.style.height=parent.clientHeight-20+"px";
+						line1.querySelector(".triangle-down").style.display="block";
+					}
+					for(var b=0;b<eleEcodeCyc.length;b++){
+						var parent=eleEcodeCyc[b].parentElement.parentElement;
+						var line1=parent.children[0];
+						line1.style.height=parent.clientHeight-20+"px";
+						line1.querySelector(".triangle-right").style.top="-5px";
+						line1.querySelector(".triangle-right").style.display="block";
+					}
+					eleEcodeShow.style.height=eleEcodeShow.parentElement.clientHeight-40+"px";
+					//eleEcodeShow.style.width=eleEcodeShow.parentElement.clientWidth-10+"px";
+				}
 			}
 		}
-		p_b=temp.indexOf("(",p_a);
-		p_a=temp.indexOf("(",p_b+1);
-	}
-	//高亮引号内容
-	p_b=-1;
-	p_a=temp.indexOf('“',p_b);
-	while(p_a!=-1){
-		p_b=temp.indexOf("”",p_a);
-		p_c=temp.lastIndexOf("'",p_a)
-			if(inquto(temp,p_c)||p_c==-1){
-				temp_=temp.slice(p_a,p_b+1).replace(/[ ]/g,"&nbsp;");
-				temp_=temp_.fontcolor(color_code_quto);
-				temp=temp.slice(0,p_a)+temp_+temp.substr(p_b+1);
-				p_a=temp.indexOf("“",p_a);
-				p_b=temp.indexOf("”",p_a);
-				p_a=temp.indexOf("“",p_b+1);
+		function drawn(origiArr){
+			var html="";
+			for(var b=0;b<origiArr.length;b++){
+				if(!origiArr[b].length){
+					if(origiArr[b].type==".程序集"){
+						html+="<table class='assembly_table'><tr><th>程序集名</th><th>保留</th><th>保留</th><th>备注</th></tr>";
+						for(var c=origiArr[b].parameter.length;c<4;c++){
+							origiArr[b].parameter[c]="";
+						}
+						origiArr[b].parameter[3]="<span class='remark'>"+origiArr[b].parameter[3].replace(/ /g,"&nbsp;")+"</span>";
+						html+=tablePara(4,origiArr[b].parameter);
+						lastPart=0;//程序集
+					}
+					else if(origiArr[b].type==".程序集变量"){
+						if(lastPart!=0 && lastPart!=0.1){
+							html+="<table class='assembly_table'><tr><th>程序集名</th><th>保留</th><th>保留</th><th>备注</th></tr>";
+							lastPart=0;
+						}
+						if(lastPart!=0.1){
+							html+="<tr><th>变量名</th><th>类型</th><th>数组</th><th>备注</th></tr>";
+							lastPart=0.1;//程序集变量
+						}
+						for(var c=origiArr[b].parameter.length;c<4;c++){
+							origiArr[b].parameter[c]="";
+						}
+						origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+						origiArr[b].parameter[3]="<span class='remark'>"+origiArr[b].parameter[3].replace(/ /g,"&nbsp;")+"</span>";
+						html+=tablePara(4,origiArr[b].parameter);
+						lastPart=0.1;//程序集变量
+					}
+					else if(origiArr[b].type==".子程序"){
+						if(lastPart!=1){
+							if(lastPart<1 && lastPart>-1){
+								html+="</table>";
+							}
+							else if(lastPart<0){
+								html+="</div>";
+							}
+							else if(lastPart>1 && lastPart<=2){
+								html+="</table></div>";
+							}
+							html+="<div class='function'><table class='function_table'><tr><th>子程序名</th><th>返回值类型</th><th>公开</th><th colspan='3'>备注</th></tr>";
+							lastPart=1;//子程序
+						}
+						else{
+							html+="</table></div><div class='function'><table class='function_table'><tr><th>子程序名</th><th>返回值类型</th><th>公开</th><th colspan='3'>备注</th></tr>";
+						}
+						for(var c=origiArr[b].parameter.length;c<4;c++){
+							origiArr[b].parameter[c]="";
+						}
+						if(origiArr[b].parameter[2]=="公开"){
+							origiArr[b].parameter[2]="√";
+						}
+						origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+						origiArr[b].parameter[3]="<span class='remark'>"+origiArr[b].parameter[3].replace(/ /g,"&nbsp;")+"</span>";
+						html+=tablePara(4,origiArr[b].parameter,3,3);
+						lastPart=1;//子程序
+					}
+					else if(origiArr[b].type==".参数"){
+						if(lastPart==1){
+							html+="<tr><th>参数名</th><th>类型</th><th>参考</th><th>可空</th><th>数组</th><th>备注</th></tr>";
+						}
+						else if(lastPart==3){
+							html+="<tr><th>参数名</th><th>类型</th><th>传址</th><th>数组</th><th>备注</th></tr>";
+						}
+						for(var c=origiArr[b].parameter.length;c<4;c++){
+							origiArr[b].parameter[c]="";
+						}
+						if(lastPart>=3 && lastPart<4){
+							var temp="";
+							if(origiArr[b].parameter[2]=="传址 数组"){
+								temp="√</td><td>√";
+							}
+							else if(origiArr[b].parameter[2]=="传址"){
+								temp="√</td><td>";
+							}
+							else if(origiArr[b].parameter[2]=="数组"){
+								temp="</td><td>√";
+							}
+							else{
+								temp="</td><td>";
+							}
+							origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+							origiArr[b].parameter[3]="<span class='remark'>"+origiArr[b].parameter[3].replace(/ /g,"&nbsp;")+"</span>";
+							origiArr[b].parameter[2]=temp;
+							html+=tablePara(4,origiArr[b].parameter);
+						}
+						else if(lastPart>=1 && lastPart<2){
+							if(origiArr[b].parameter[2]=="参考 可空 数组"){
+								origiArr[b].parameter[2]="√</td><td>√</td><td>√";
+							}
+							else if(origiArr[b].parameter[2]=="参考 可空"){
+								origiArr[b].parameter[2]="√</td><td>√</td><td>";
+							}
+							else if(origiArr[b].parameter[2]=="参考 数组"){
+								origiArr[b].parameter[2]="√</td><td></td><td>√";
+							}
+							else if(origiArr[b].parameter[2]=="可空 数组"){
+								origiArr[b].parameter[2]="</td><td>√</td><td>√";
+							}
+							else if(origiArr[b].parameter[2]=="参考"){
+								origiArr[b].parameter[2]="√</td><td></td><td>";
+							}
+							else if(origiArr[b].parameter[2]=="可空"){
+								origiArr[b].parameter[2]="</td><td>√</td><td>";
+							}
+							else if(origiArr[b].parameter[2]=="数组"){
+								origiArr[b].parameter[2]="</td><td></td><td>√";
+							}
+							else{
+								origiArr[b].parameter[2]="</td><td></td><td>";
+							}
+							origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+							origiArr[b].parameter[3]="<span class='remark'>"+origiArr[b].parameter[3].replace(/ /g,"&nbsp;")+"</span>";
+							html+=tablePara(4,origiArr[b].parameter);
+						}
+						lastPart+=.1;//子程序参数 1.1 dll参数 3.1
+					}
+					else if(origiArr[b].type==".局部变量"){
+						if(lastPart!=2){
+							html+="</table>"
+							html+="<table class='variable_table'><tr><th>变量名</th><th>类型</th><th>静态</th><th>数组</th><th>备注</th></tr>";
+							lastPart=2;//局部变量
+						}
+						for(var c=origiArr[b].parameter.length;c<5;c++){
+							origiArr[b].parameter[c]="";
+						}
+						origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+						origiArr[b].parameter[4]="<span class='remark'>"+origiArr[b].parameter[4].replace(/ /g,"&nbsp;")+"</span>";
+						origiArr[b].parameter[3]=origiArr[b].parameter[3].replace(/"/g,"");
+						if(origiArr[b].parameter[2]=="静态"){
+							origiArr[b].parameter[2]="√";
+						}
+						html+=tablePara(5,origiArr[b].parameter);
+						lastPart=2;//局部变量
+					}
+					else if(origiArr[b].type==".DLL命令"){
+						if(lastPart!=3){
+							html+="</table></div>";
+						}
+						html+="<div class='dllFunction'><table class='dllFunction_table'><tr><th>Dll命令名</th><th>返回值类型</th><th>公开</th><th colspan='2'>备注</th></tr>";
+						for(var c=origiArr[b].parameter.length;c<6;c++){
+							origiArr[b].parameter[c]="";
+						}
+						if(origiArr[b].parameter[4]=="公开"){
+							origiArr[b].parameter[4]="√";
+						}
+						html+="<tr><td>"+origiArr[b].parameter[0]+"</td><td><span class='dataType'>"+origiArr[b].parameter[1]+"</span></td><td>"+origiArr[b].parameter[4]+"</td><td colspan='2'><span class='remark'>"+origiArr[b].parameter[5]+"</span></td></tr>";
+						html+="<tr><th colspan='5'>库文件名：</th></tr>";
+						html+="<tr><td colspan='5'><span class='command'>"+origiArr[b].parameter[2].replace(/"/g,"")+"</span></td></tr>";
+						html+="<tr><th colspan='5'>在库中对应命令名：</th></tr>";
+						html+="<tr><td colspan='5'><span class='command'>"+origiArr[b].parameter[3].replace(/"/g,"")+"</span></td></tr>";
+						lastPart=3;//DLL
+					}
+					else if(origiArr[b].type==".常量"){
+						if(lastPart!=4){
+							html+="</table></div>";
+							html+="<div class='statics'><table class='statics_table'><tr><th>常量名称</th><th>常量值</th><th>公开</th><th>备注</th></tr>";
+						}
+						for(var c=origiArr[b].parameter.length;c<4;c++){
+							origiArr[b].parameter[c]="";
+						}
+						var temp=trim(origiArr[b].parameter[1].replace(/"/g,""));
+						if(Number(temp)==temp && temp!=""){
+							origiArr[b].parameter[1]="<span class='math'>"+temp+"</span>";
+						}
+						else{
+							origiArr[b].parameter[1]="<span class='quote'>"+origiArr[b].parameter[1].replace(/ /g,"&nbsp;")+"</span>";
+						}
+						origiArr[b].parameter[0]="<span class='static'>"+origiArr[b].parameter[0]+"</span>";
+						origiArr[b].parameter[3]="<span class='remark'>"+origiArr[b].parameter[3].replace(/ /g,"&nbsp;")+"</span>";
+						if(origiArr[b].parameter[2]=="公开"){
+							origiArr[b].parameter[2]="√";
+						}
+						html+=tablePara(4,origiArr[b].parameter);
+						lastPart=4;//常量
+					}
+					else if(origiArr[b].type==".数据类型"){
+						if(lastPart!=5){
+							html+="</table></div>";
+							html+="<div class='selfDataType'><table class='selfDataType_table'><tr><th>数据类型名</th><th>公开</th><th colspan='3'>备注</th></tr>";
+						}
+						for(var c=origiArr[b].parameter.length;c<4;c++){
+							origiArr[b].parameter[c]="";
+						}
+						origiArr[b].parameter[0]="<span class='dataType'>"+origiArr[b].parameter[0]+"</span>";
+						origiArr[b].parameter[2]="<span class='remark'>"+origiArr[b].parameter[2].replace(/ /g,"&nbsp;")+"</span>";
+						if(origiArr[b].parameter[1]=="公开"){
+							origiArr[b].parameter[1]="√";
+						}
+						html+=tablePara(3,origiArr[b].parameter,2,3);
+						lastPart=5;//数据类型
+					}
+					else if(origiArr[b].type==".成员"){
+						if(lastPart==5){
+							html+="<tr><th>成员名</th><th>类型</th><th>传址</th><th>数组</th><th>备注</th></tr>";
+						}
+						for(var c=origiArr[b].parameter.length;c<5;c++){
+							origiArr[b].parameter[c]="";
+						}
+						origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+						origiArr[b].parameter[4]="<span class='remark'>"+origiArr[b].parameter[4].replace(/ /g,"&nbsp;")+"</span>";
+						origiArr[b].parameter[3]=origiArr[b].parameter[3].replace(/"/g,"");
+						if(origiArr[b].parameter[2]=="传址"){
+							origiArr[b].parameter[2]="√";
+						}
+						html+=tablePara(5,origiArr[b].parameter);
+						lastPart=5.1;//数据类型成员
+					}
+					else if(origiArr[b].type==".全局变量"){
+						if(lastPart!=6){
+							html+="</table></div>";
+							html+="<div class='globalVariable'><table class='globalVariable_table'><tr><th>全局变量名</th><th>全类型</th><th>数组</th><th>公开</th><th>备注</th></tr>";
+						}
+						for(var c=origiArr[b].parameter.length;c<5;c++){
+							origiArr[b].parameter[c]="";
+						}
+						origiArr[b].parameter[4]="<span class='remark'>"+origiArr[b].parameter[4].replace(/ /g,"&nbsp;")+"</span>";
+						var temp=origiArr[b].parameter[3];
+						origiArr[b].parameter[3]=origiArr[b].parameter[2];
+						origiArr[b].parameter[2]=temp;
+						if(origiArr[b].parameter[3]=="公开"){
+							origiArr[b].parameter[3]="√";
+						}
+
+						origiArr[b].parameter[2]=origiArr[b].parameter[2].replace(/"/g,"");
+						origiArr[b].parameter[1]="<span class='dataType'>"+origiArr[b].parameter[1]+"</span>";
+						html+=tablePara(5,origiArr[b].parameter);
+						lastPart=6;//全局变量
+					}
+					else if(origiArr[b].type.substr(0,1)=="."){
+						if(lastPart>=0){
+							html+="</table>";
+							lastPart=-2;
+						}
+						var command=origiArr[b].type;
+						for(var c=0;c<replaceCommand.length;c++){
+							if(replaceCommand[c].origi==command){
+								command=replaceCommand[c].replace;
+								break;
+							}
+						}
+						var parameter="";
+						for(var c=0;c<origiArr[b].parameter.length;c++){
+							parameter+=origiArr[b].parameter[c];
+							if(c<origiArr[b].parameter.length-1){
+								parameter+=",";
+							}
+						}
+						if(b==0){
+							if(lastPart<-1){
+								html+="<li><ul><o class='line1'><i class='triangle-right'></i><i class='triangle-down'></i></o><o class='line2'><i class='triangle-down'></i></o>";
+							}
+							else{
+								html+="<ul><o class='line1'><i class='triangle-right'></i><i class='triangle-down'></i></o><o class='line2'><i class='triangle-down'></i></o>";
+							}
+							lastPart--;
+							html+="<p>"+command+parseCodeLine(parameter,1)+"</p>";
+						}
+						else if(b==origiArr.length-1){
+							html+="</li><p>"+command+parseCodeLine(parameter,1)+"</p>";
+							html+="</ul>";
+
+						}
+						else{
+							html+="<li><p>"+command+parseCodeLine(parameter,1)+"</p></li>";
+						}
+
+					}
+					else if(origiArr[b].type=="code"){
+						if(lastPart>-1){
+							html+="</table>";
+							lastPart=-1;
+						}
+						var parameter=origiArr[b].parameter;
+						if(lastPart<-1){
+							html+="<li><p class='codeline'>"+parseCodeLine(parameter,1)+"</p></li>";
+						}
+						else{
+							html+="<p class='codeline'>"+parseCodeLine(parameter,1)+"</p>";
+						}
+					}
+				}
+				else{
+					html+=drawn(origiArr[b]);
+				}
 			}
-			else{break}
-	}
-		//高亮()
-	temp=ecode_highlight_pair(temp,"(",color_code_bracket);
-	temp=ecode_highlight_pair(temp,")",color_code_bracket);
-	p_a=temp.indexOf("'");
-	while(p_a!=-1){
-		if(!inquto(temp,p_a)){
-			temp_=temp.substr(p_a).replace(/[ ]/g,"&nbsp;");
-			temp_=temp_.fontcolor(color_remark);
-			temp=temp.slice(0,p_a)+temp_
-			break;
+			return html;
 		}
-		p_a=temp.indexOf("'",p_a+1);
+		function parseCodeLine(origiCodeStr,type){
+			var codeStr=origiCodeStr;
+			var str=codeStr;
+			var add=0;
+			var remark=codeStr.length;
+			if(type){
+				//高亮注释/////////////////////////////////
+				var quote=findMatchStr("“","”",codeStr);
+				while(remark>-1){
+					remark=codeStr.lastIndexOf("'",remark-1);
+					if(quote.length>0){
+						if(quote[quote.length-1][1]<remark || quote[quote.length-1][0]>remark){break;}
+					}
+					else{break;}
+				}
+				if(remark==-1){
+					remark=codeStr.length;
+				}
+				else{
+					codeStr=codeStr.substr(0,remark)+"<span class='remark'>"+codeStr.substr(remark).replace(/ /g,"&nbsp;")+"</span>";
+				}
+				//高亮运算符/////////////////////////////////
+				add=0;
+				str=codeStr;
+				quote=findMatchStr("“","”",codeStr);
+				var compuStr="+-*/\\＝%<>≠=,";
+				for(var a=0;a<remark;a++){
+					var p=a;
+					var temp=str.substr(p,1);
+					if(compuStr.indexOf(temp)>-1){
+						var k=0;
+						for(var b=0;b<quote.length;b++){
+							if(quote[b][0]<p && quote[b][1]>p){
+								k=1;
+								break;
+							}
+						}
+						if(k==0){
+							temp="<span class='operator'>"+temp+"</span>";
+							codeStr=codeStr.substr(0,add+p)+temp+codeStr.substr(add+p+1);
+							add+=temp.length-1;
+						}
+					}
+				}
+				remark+=add;
+				//高亮引用/////////////////////////////////
+				add=0;
+				str=codeStr;
+				quote=findMatchStr("“","”",codeStr);
+				for(var a=0;a<quote.length;a++){
+					if(quote[a][1]<remark){
+						var rep="<span class='quote'>"+codeStr.substr(add+quote[a][0],quote[a][1]-quote[a][0]+1).replace(/ /g,"&nbsp;")+"</span>";
+						codeStr=codeStr.substr(0,add+quote[a][0])+rep+codeStr.substr(add+quote[a][1]+1);
+						add+=rep.length-(quote[a][1]-quote[a][0])-1;
+					}
+				}
+				remark+=add-1;
+				//高亮常量/////////////////////////////////
+				add=0;
+				quote=findMatchStr("“","”",codeStr);
+				var statics=codeStr.indexOf("#",0);
+				while(statics>-1){
+					var k=0;
+					for(var a=0;a<quote.length;a++){
+						if((quote[a][0]<statics && quote[a][1]>statics)||(statics>remark)){
+							k=1;
+							break;
+						}
+					}
+					if(k==0){
+						var p=new Array();
+						p[p.length]=codeStr.indexOf("+",statics);
+						p[p.length]=codeStr.indexOf("-",statics);
+						p[p.length]=codeStr.indexOf("*",statics);
+						p[p.length]=codeStr.indexOf("/",statics);
+						p[p.length]=codeStr.indexOf("%",statics);
+						p[p.length]=codeStr.indexOf("=",statics);
+						p[p.length]=codeStr.indexOf("\\",statics);
+						p[p.length]=codeStr.indexOf(">",statics);
+						p[p.length]=codeStr.indexOf("<",statics);
+						p[p.length]=codeStr.indexOf(".",statics);
+						p[p.length]=codeStr.indexOf(",",statics);
+						p[p.length]=codeStr.indexOf(" ",statics);
+						p[p.length]=codeStr.indexOf("(",statics);
+						p[p.length]=codeStr.indexOf(")",statics);
+						p[p.length]=codeStr.indexOf("[",statics);
+						p[p.length]=codeStr.indexOf("]",statics);
+						p[p.length]=codeStr.indexOf("{",statics);
+						p[p.length]=codeStr.indexOf("}",statics);
+						p[p.length]=codeStr.indexOf("＝",statics);
+						p[p.length]=codeStr.indexOf("≠",statics);
+						var p1=codeStr.length;
+						for(var b=0;b< p.length;b++){
+							if(p[b]!=-1 && p[b]<p1){
+								p1=p[b];
+							}
+						}
+						var rep="<span class='static'>"+trim(codeStr.substr(statics,p1-statics))+"</span>";
+						codeStr=codeStr.substr(0,statics)+rep+codeStr.substr(p1);
+						add+=rep.length-(p1-statics);
+						remark+=rep.length-(p1-statics);
+					}
+					statics=codeStr.indexOf("#",add+statics+1);
+				}
+				add=0;
+				str=codeStr;
+
+			}
+			//高亮命令/////////////////////////////////
+			var quote=findMatchStr("“","”",codeStr);
+			var bracket0=findMatchStr("(",")",codeStr);
+			for(var a=0;a<bracket0.length;a++){
+				var k=0;
+				for(var b=0;b<quote.length;b++){
+					if((quote[b][0]<bracket0[a][0] && quote[b][1]>bracket0[a][1])||(bracket0[a][0]>remark)){
+						k=1;
+						break;
+					}
+				}
+				if(k==0){
+					var son=codeStr.substr(bracket0[a][0]+1,bracket0[a][1]-bracket0[a][0]-1);
+					son=parseCodeLine(son);
+					var p=new Array();
+					p[p.length]=codeStr.lastIndexOf("+",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("-",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("*",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("/",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("%",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("=",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("\\",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf(">",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("<",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf(".",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf(",",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("＝",bracket0[a][0]-1);
+					p[p.length]=codeStr.lastIndexOf("≠",bracket0[a][0]-1);
+					var p1=-1;
+					for(var b=0;b< p.length;b++){
+						if(p[b]!=-1 && p[b]>p1){
+							p1=p[b];
+						}
+					}
+					var command=codeStr.substr(p1+1,bracket0[a][0]-p1-1);
+					var m=0
+					for(var e=0;e<sysCom.length;e++){
+						if(sysCom[e]==trim(command)){
+							m=1;
+							break;
+						}
+					}
+					if(m==0){
+						var rep="<span class='command'>"+trim(command)+"</span>";
+					}
+					else{
+						var rep="<span class='sysCommand'>"+trim(command)+"</span>";
+					}
+					//console.log(str.substr(0,add+p1+1),str.substr(add+bracket0[a][0],1),codeStr.substr(bracket0[a][1]),son)
+					str=str.substr(0,add+p1+1)+rep+str.substr(add+bracket0[a][0],1)+son+codeStr.substr(bracket0[a][1]);
+					var len=rep.length-command.length+son.length-(bracket0[a][1]-bracket0[a][0])+1
+					add+=len;
+					remark+=len;
+				}
+			}
+			if(type){
+				//高亮括号样式/////////////////////////////////
+				add=0;
+				codeStr=str;
+				quote=findMatchStr("“","”",codeStr);
+				var compuStr="(){}[]";
+				for(var a=0;a<=remark;a++){
+					var p=a;
+					var temp=str.substr(p,1);
+					if(compuStr.indexOf(temp)>-1){
+						var k=0;
+						for(var b=0;b<quote.length;b++){
+							if(quote[b][0]<p && quote[b][1]>p){
+								k=1;
+								break;
+							}
+						}
+						if(k==0){
+							if(temp=="(" || temp==")"){
+								temp="<span class='bracket0'>"+temp;
+							}
+							else if(temp=="[" || temp=="]"){
+								temp="<span class='bracket1'>"+temp;
+							}
+							else if(temp=="{" || temp=="}"){
+								temp="<span class='bracket2'>"+temp;
+							}
+							temp+="</span>";
+							codeStr=codeStr.substr(0,add+p)+temp+codeStr.substr(add+p+1);
+							add+=temp.length-1;
+						}
+					}
+				}
+				remark+=add;
+				//高亮数字/////////////////////////////////
+				str=codeStr;
+				add=0;
+				quote=findMatchStr("“","”",codeStr);
+				var p=codeStr.indexOf("</span>");
+				while(p>-1 && p<remark){
+					var k=0;
+					for(var b=0;b<quote.length;b++){
+						if(quote[b][0]<p && quote[b][1]>p){
+							k=1;
+							break;
+						}
+					}
+					if(k==0){
+						var p2=codeStr.indexOf("<span",p);
+						if(p2==-1){p2=codeStr.length}
+						var rep=trim(codeStr.substr(p+7,p2-p-7));
+						if(Number(rep)==rep && rep!=""){
+							rep="<span class='math'>"+rep+"</span>";
+							str=str.substr(0,add+p+7)+rep+str.substr(add+p2);
+							add+=rep.length-(p2-p-7);
+						}
+					}
+					p=codeStr.indexOf("</span>",p+1);
+				}
+				remark+=add;
+			}
+			return str;
+		}
+		function tablePara(cols,origiArr,start,num){
+			var temp="";
+			for(var c=0;c<cols;c++){
+				temp+="<td"
+				if(start==c){
+					temp+=" colspan='"+num+"'";
+				}
+				temp+=">";
+				if(c<origiArr.length){
+					temp+=origiArr[c];
+				}
+				temp+="</td>";
+			}
+			temp="<tr>"+temp+"</tr>";
+			return temp;
+		}
+		function matchRe(origiArr){
+			var limit=new Array();
+			var temp0=new Array();
+			for(var a=0;a<origiArr.length;a++){
+				if(limit.length==0 || a>limit[0][1]){
+					if(origiArr[a].type==".如果真"){
+						limit=findMatchArr(".如果真",".如果真结束",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else if(origiArr[a].type==".判断开始"){
+						limit=findMatchArr(".判断开始",".判断结束",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else if(origiArr[a].type==".如果"){
+						limit=findMatchArr(".如果",".如果结束",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else if(origiArr[a].type==".判断循环首"){
+						limit=findMatchArr(".判断循环首",".判断循环尾",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else if(origiArr[a].type==".计次循环首"){
+						limit=findMatchArr(".计次循环首",".计次循环尾",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else if(origiArr[a].type==".变量循环首"){
+						limit=findMatchArr(".变量循环首",".变量循环尾",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else if(origiArr[a].type==".循环判断首"){
+						limit=findMatchArr(".循环判断首",".循环判断尾",origiArr);
+						if(limit.length>0){
+							var temp1=new Array({type:"code",parameter:""});
+							for(var c=limit[0][0]+1;c<limit[0][1];c++){
+								temp1[temp1.length]=origiArr[c];
+							}
+							temp1=matchRe(temp1);
+							temp1[0]=origiArr[limit[0][0]];
+							temp1[temp1.length]=origiArr[limit[0][1]];
+							temp0[temp0.length]=temp1;
+						}
+					}
+					else{
+						temp0[temp0.length]=origiArr[a];
+					}
+				}
+			}
+			return temp0;
+		}
+		function findMatchStr(startStr,endStr,origiStr){
+			var temp0=new Array();
+			var half=new Array();
+			var end=-1;
+			var start=origiStr.indexOf(startStr);
+			while(start>-1){
+				end=origiStr.indexOf(endStr,start+1);
+				var p=origiStr.indexOf(startStr,start+1);
+				if(p==-1){
+					p=origiStr.length;
+				}
+				var temp1;
+				if(p>end){
+					temp1=[start,end];
+					var pp=half.length-1;
+					for(var a=pp;a>=0;a--){
+						end=origiStr.indexOf(endStr,end+1);
+
+						if(end<p){
+							temp0[half[a]][1]=end;
+							half.length--;
+						}
+						else{
+							break;
+						}
+					}
+				}
+				else{
+					temp1=[start,-1];
+					half[half.length]=temp0.length;
+				}
+				temp0[temp0.length]=temp1;
+				start=origiStr.indexOf(startStr,start+1);
+
+			}
+			var tempRe=new Array();
+			var last=-1;
+			for(var a=0;a<temp0.length;a++){
+				if(temp0[a][1]>last){
+					tempRe[tempRe.length]=temp0[a];
+					last=temp0[a][1];
+				}
+			}
+			return tempRe;
+
+		}
+		function findMatchArr(startStr,endStr,origiArr){
+			var temp0=new Array();
+			var start=-1;
+			var half=new Array();
+			var end=-1;
+			if(endStr==""){
+				for(var a=0;a<origiArr.length;a++){
+					if(origiArr[a].type==startStr){
+						if(start!=-1){
+							if(end==-1){
+								end=a-1;
+							}
+							var temp=[start,end];
+							temp0[temp0.length]=temp.concat();
+						}
+						start=a;
+						end=-1;
+					}
+					if(origiArr[a].type==endStr){
+						end=a;
+						if(half.length>0){
+							temp0[half[half.length-1]][1]=end;
+							half.length--;
+						}
+					}
+				}
+				if(start!=-1 && end==-1){
+					if(endStr==""){
+						end=origiArr.length-1;
+					}
+					var temp=[start,end];
+					temp0[temp0.length]=temp.concat();
+				}
+			}
+			else{
+				for(var a=0;a<origiArr.length;a++){
+					if(origiArr[a].type==startStr){
+						start=a;
+						if(start!=-1){
+							if(end==-1){
+								half[half.length]=temp0.length;
+							}
+							var temp=[start,end];
+							temp0[temp0.length]=temp.concat();
+						}
+						end=-1;
+					}
+					if(origiArr[a].type==endStr){
+						end=a;
+						if(half.length>0){
+							temp0[half[half.length-1]][1]=end;
+							half.length--;
+						}
+					}
+				}
+			}
+			return temp0;
+		}
+		function trim(str){ //删首尾空
+			return str.replace(/(^\s*)|(\s*$)/g, "");
+		}
+		return ecode;
 	}
-	temp_=trim(temp)
-	p_a=temp.indexOf(temp_)
-	//temp_1=temp.slice(0,p_a).replace(/[ ]/g,"&nbsp;")
-	temp_1="<div class='e_code_tab_width' style='width:"+(temp.slice(0,p_a).length*6).toString()+"px'></div>"
-	temp=temp_1+temp_
-	return temp;
 }
-function ecode_highlight_pair(data,str,color){
-	var temp=data,temp_="";
-	var p_a=temp.indexOf(str);
-	var p_c=-1;
-	while(p_a!=-1){
-		if(!inquto(temp,p_a)){
-			p_c=temp.lastIndexOf("'",p_a)
-			if(inquto(temp,p_c)||p_c==-1){
-				temp_=str.fontcolor(color)
-				temp=temp.slice(0,p_a)+temp_+temp.substr(p_a+1);
-				p_a=temp.indexOf(str,p_a);
-			}
-		}
-		p_a=temp.indexOf(str,p_a+1);
+function EcodeCopyCode(a){
+	var eleP=a.parentElement.parentElement;
+	if(eleP.querySelector(".origiData").style.display=="block"){
+		eleP.querySelector(".origiData").style.display="none";
+		a.innerHTML="复制代码";
 	}
-	return temp;
+	else{
+		eleP.querySelector(".origiData").style.display="block";
+		a.innerHTML="恢复视图";
+	}
 }
-//删首尾空
-function trim(string){ 
-var i=0;
-	str=string;
-	for(i=0;i<str.length; i++) { 
-		if(str.charAt(i)!=" "){break}; 
-	} 
-	str = str.substring(i,str.length); 
-	for(i=str.length-1;i>=0; i--) { 
-		if(str.charAt(i)!=" "){break}; 
-	} 
-	str = str.slice(0,i+1); 
-	return str; 
-} 
-//是否在引号内
-function inquto(text,p){
-	var p_c,p_d;
-	if(p==-1){return 0}
-	p_c=text.lastIndexOf("“",p)
-		if(p_c==-1){p_c=text.length}
-		p_d=text.indexOf("”",p_c)
-		if(p_c<p&&p<p_d){return 1}
-		else{return 0}
+function EcodeSetCode(ele,data){
+	ele.innerHTML=data;
+	ele.setAttribute("status","");
 }

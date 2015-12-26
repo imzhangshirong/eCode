@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>易语言代码框Ecode3.0在线测试</title>
+    <meta name="viewport" content="width=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="renderer" content="webkit">
+    <meta name="keywords" content="易语言代码框,Ecode3.0,张施荣,zhangshirong,Jarvis,Jarvis Zhang,开源,J.A.I.S">
+    <meta name="description" content="张施荣的开源项目,易语言代码框Ecode3.0在线测试" >
+    <meta name="author" Content="张施荣,zhangshirong,Jarvis">
+    <link rel="stylesheet" type="text/css" href="ecode.css">
+    <style>
+        .ecode{width: 90%;margin:10px 5%;left: -10px}
+        #button{
+            float: left;
+            clear: left;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 40px;
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 4px;
+            background-color: #1D7ECB;
+            color: #fff;margin-left: 2px;
+            text-align: center;
+        }
+        #button:hover{
+            box-shadow: 0px 0px 5px #1D7ECB;
+        }
+        #info{
+            font-size: 14px;width: 90%;margin-left: 5%;position: relative;left:-10px;line-height: 25px;border-radius: 5px;background-color:
+        #E9E9E9;padding: 10px;margin-bottom:20px;padding-bottom: 20px;
+        }
+        #head{
+            width: 90%;margin-left: 5%;
+            position: relative;
+        }
+        #head a{
+            text-decoration: none;
+            color: #005dab;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="head"><span style="font-size: 34px;line-height: 100px">Ecode 3.0</span> <span>在线演示
+</span><div style="right: 0px;bottom: 20px;position: absolute"><a href="./download/ecode2.1.rar">Ecode2.1下载</a><a href="./download/ecode3.0.rar">Ecode3.0下载</a><a href="https://github.com/imzhangshirong/Ecode" target="_blank">Github</a></div></div>
+<div id="info">
+    <p style="font-size: 16px;line-height: 40px;text-indent: 10px">更新说明 ></p>
+    <div style="text-indent: 2em">
+        <p>1、此版本为重写版本，与上一个版本不通用（ 废弃 ），推荐用此版本</p>
+        <p>2、添加流程线小箭头</p>
+        <p>3、重写转换后的html结构，便于自定义样式、进行外部js修改简单</p>
+        <p>4、无需像上版本需要特定格式的id名</p>
+        <p>5、支持全局转换、指定元素单个转换以及自定义目标元素数组转换</p>
+        <p>6、容错性提高，支持程序集代码、dll代码等多个部分同时存在的情况，建议还是分开放置</p>
+        <p>7、优化操作部分</p>
+        <p>8、提高兼容性</p>
+        <p style="font-size: 16px;line-height: 20px;margin-top: 10px;margin-bottom: 10px">兼容性说明</p>
+        <div style="text-indent: 3em">
+            <p>(1) 支持 Chrome</p>
+            <p>(2) 支持 Firefox</p>
+            <p>(3) 支持 Safari</p>
+            <p>(4) 支持 IE 8+</p>
+        </div>
+        <p style="font-size: 16px;line-height: 20px;margin-top: 10px;margin-bottom: 10px">使用说明</p>
+        <div style="text-indent: 3em">
+            <p>(1) 引入ecode.css & ecode.js（ 可以自行下载，也可以直接从本站引用 ）</p>
+            <p>(2) 创建Ecode对象</p>
+            <p>(3) 使用对象的tran方法</p>
+            <p>PS：使用方法请参考本页面代码，此版本为UTF-8版本，如需其他编码格式请自行转码</p>
+        </div>
+    </div>
+</div>
+    <div style="clear: both;float: left;width: 90%;margin:10px 5%;height: 400px">
+        <div style="float: left;width: 48%">
+            <textarea style="width: 100%;height: 350px;float: left" id="origi">
+.版本 2
+
+.子程序 GetProcessHandle, 整数型
+.参数 lpProcessName, 文本型
+.局部变量 hSnapShot, 整数型
+.局部变量 dwRet, 整数型
+.局部变量 prHandle, 整数型
+.局部变量 pe32, PROCESSENTRY32
+
+hSnapShot ＝ CreateToolhelp32Snapshot (#TH32CS_SNAPALL, 0)
+.如果真 (hSnapShot ＝ 0)
+    信息框 (“获得进程快照失败”, 0, )
+    返回 (dwRet)
+.如果真结束
+pe32.dwSize ＝ 1024
+prHandle ＝ Process32First (hSnapShot, pe32)
+.判断循环首 (prHandle ≠ 0)
+    .判断开始 (到文本 (pe32.szExeFile) ＝ lpProcessName)
+        dwRet ＝ pe32.th32ProcessID
+        跳出循环 ()
+    .默认
+        prHandle ＝ Process32Next (hSnapShot, pe32)
+    .判断结束
+
+.判断循环尾 ()
+CloseHandle (hSnapShot)
+返回 (dwRet)
+            </textarea>
+            <a href="javascript:putin()" id="button">绘制代码</a>
+        </div>
+        <div class="ecode" id="test" desc="可编辑演示代码段" style="float: right;clear: none;width: 48%;margin: 0px;height: 100%"></div>
+    </div>
+    <div class="ecode" desc="DLL演示">.版本 2
+        .DLL命令 GetProcAddress, 整数型, "kernel32", "GetProcAddress", 公开, 返回函数地址  成功返回DLL库模块内函数地址
+        .参数 DLL句柄, 整数型, , DLL库模块的句柄，可以调用 LoadLibrary 函数返回。
+        .参数 DLL库模块内函数名, 文本型, , DLL库模块内函数名
+
+        .DLL命令 VirtualQueryEx, 整数型, "kernel32", "VirtualQueryEx"
+        .参数 hProcess, 整数型, , 对象的进程句柄,可以使用函数 OpenProcess() 返回。
+        .参数 lpAddress, 整数型, , 对象指针地址
+        .参数 lpBuffer, 虚拟信息, 传址, 返回的虚拟信息
+        .参数 dwLength, 整数型, 数组, 信息长度,已知 28
+
+    </div>
+    <div class="ecode" desc="自定义数据类型演示">.版本 2
+
+        .数据类型 虚拟信息, , MEMORY_BASIC_INFORMATION
+        .成员 BaseAddress, 整数型, 传址, "5", lpAddress所在页面的基地址
+        .成员 AllocationBase, 整数型, , "444", 用VirtualAlloc函数分配此页面时的基地址，可以小于等于BaseAddress
+        .成员 AllocationProtect, 整数型, , , 分配时的保护属性，比如只读、读写、可执行等
+        .成员 RegionSize, 整数型
+        .成员 State, 整数型, , , 现在的保护属性
+        .成员 Protect, 整数型, , , 可以取MEM_COMMIT，MEM_FREE，MEMRESERVE三者之一，其中只有MEM_COMMIT状态的页面是实际分配了物理内存的可以访问
+        .成员 lType, 整数型, , , 描述有关页面共享的属性
+    </div>
+    <div class="ecode" desc="常量数据表演示">.版本 2
+
+        .常量 PAGE_READWRITE, "4"
+        .常量 PAGE_EXECUTE_READWRITE, "64"
+        .常量 PAGE_EXECUTE_READ, "32"
+        .常量 HKEY_CLASSES_ROOT, "(( HKEY ) (ULONG_PTR)((LONG)0x80000000) )", , (( HKEY ) (ULONG_PTR)((LONG)0x80000000) )
+        .常量 HKEY_CURRENT_CONFIG, "(( HKEY ) (ULONG_PTR)((LONG)0x80000005) )", , (( HKEY ) (ULONG_PTR)((LONG)0x80000005) )
+        .常量 HKEY_CURRENT_USER, "(( HKEY ) (ULONG_PTR)((LONG)0x80000001) )", , (( HKEY ) (ULONG_PTR)((LONG)0x80000001) )
+        .常量 WH_GETMESSAGE, "3"
+
+    </div>
+    <div class="ecode" desc="全局变量演示">
+        .版本 2
+        .支持库 iext
+
+        .全局变量 当前用户id, user_infomation
+        .全局变量 编号, 整数型, , "5", 1报价单 2订单 3GDKFD 4银行 5现金
+        .全局变量 当前单据, 整数型
+        .全局变量 当前单据_超级列表框, 超级列表框
+        .全局变量 下达编号_工单, 整数型, 公开
+
+    </div>
+<div style="text-align: center;font-size: 14px;color: #BDBDBD;line-height: 40px;font-weight: 300">© 2014-2015
+    zhangshirong-Jarvis</div>
+</body>
+<script src="ecode.js"></script>
+<script>
+    var codes= Ecode.create();//创建
+    function putin(){
+        EcodeSetCode(document.getElementById('test'),document.getElementById('origi').value);//设置代码
+        codes.trans();//绘制
+    }
+    putin();
+</script>
+</html>
